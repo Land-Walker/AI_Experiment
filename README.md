@@ -14,6 +14,12 @@
 8. implement a function that allows to see what is going on in KAN
     - Visualization tool possibly?
 
+## Architecture Design
+Three-tier hybrid architecture: 
+1. Wavelet decomposition → Multi-scale frequency analysis 
+2. WaveNet with FastKANConv residual blocks → Temporal modeling with learnable frequency-specific patterns 
+3. KAN conditioning → Macroeconomic awareness
+
 
 ## Reference
 https://github.com/huangst21/TimeKAN/blob/main/models/TimeKAN.py
