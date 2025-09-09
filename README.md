@@ -6,6 +6,7 @@
 3. implement result visualization tool ✅
 - 3.5 annotate / make a note of the code to fully understand what the hell is going on 
 4. implement wavelet transformation and cascaded frequency decomposition as an input
+5. modify wavenet architecture with FastKANConv residual blocks
 5. implement subtle details from TimeGrad (specifically for processign time series data)
     - make input multivariate
     - update result visualization tool
