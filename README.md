@@ -1,9 +1,10 @@
 # DiffRL_Finance
 
 ## Plan
-1. build on simple diffusion model, make it work for time series data (yfinance)
-2. implement evaluation function to compare performance
-3. implement result visualization tool
+1. build on simple diffusion model, make it work for time series data (yfinance) ✅
+2. implement evaluation function to compare performance ✅
+3. implement result visualization tool ✅
+- 3.5 annotate / make a note of the code to fully understand what the hell is going on 
 4. implement wavelet transformation and cascaded frequency decomposition as an input
 5. implement subtle details from TimeGrad (specifically for processign time series data)
     - make input multivariate
