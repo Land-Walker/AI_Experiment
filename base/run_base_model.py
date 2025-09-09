@@ -1,3 +1,6 @@
+from torch.optim import Adam
+import torch
+
 from data_loader import *
 from forward_process import *
 from model import *
@@ -35,27 +38,48 @@ print(f"\nSample batch shape: {sample_batch.shape}")
 show_timeseries_sample(sample_batch, dataset, "Stock Price Time Series")
 
  # Option 1: Use your yfDf with selected columns
-    dataset, dataloader, info = load_timeseries_dataset(
-        yf_dataframe=yf_df,  # Your existing variable
-        use_columns=['Open', 'High', 'Low', 'Close'],  # Exclude Volume for cleaner data
-        sequence_length=60  # 60-day sequences
-    )
+dataset, dataloader, info = load_timeseries_dataset(
+    yf_dataframe=yf_df,  # Your existing variable
+    use_columns=['Open', 'High', 'Low', 'Close'],  # Exclude Volume for cleaner data
+    sequence_length=60  # 60-day sequences
+)
 
-    # Option 2: Use all OHLCV data from your yfDf (auto-detects numeric columns)
-    # dataset, dataloader, info = load_timeseries_dataset(yf_dataframe=yfDf, sequence_length=30)
+# Option 2: Use all OHLCV data from your yfDf (auto-detects numeric columns)
+# dataset, dataloader, info = load_timeseries_dataset(yf_dataframe=yfDf, sequence_length=30)
 
-    # Option 3: Just closing prices from your yfDf
-    # dataset, dataloader, info = load_timeseries_dataset(yf_dataframe=yfDf, use_columns=['Close'], sequence_length=100)
+# Option 3: Just closing prices from your yfDf
+# dataset, dataloader, info = load_timeseries_dataset(yf_dataframe=yfDf, use_columns=['Close'], sequence_length=100)
 
-    # Print dataset information
-    print("Dataset Information:")
-    for key, value in info.items():
-        print(f"  {key}: {value}")
+# Print dataset information
+print("Dataset Information:")
+for key, value in info.items():
+    print(f"  {key}: {value}")
 
-    # Show a sample
-    sample_batch = next(iter(dataloader))
-    print(f"\nSample batch shape: {sample_batch.shape}")
-    show_timeseries_sample(sample_batch, dataset, "Stock Price Time Series")
+# Show a sample
+sample_batch = next(iter(dataloader))
+print(f"\nSample batch shape: {sample_batch.shape}")
+show_timeseries_sample(sample_batch, dataset, "Stock Price Time Series")
+
+# ---------------------------------------------------------------------------------------------------------------------------
+# Modelling
+# For time series with 4 features (OHLC) and sequence length 100
+model = create_wavenet_model(input_dim=4)
+
+# Test forward pass
+batch_size = 8
+sequence_length = 100
+x = torch.randn(batch_size, 4, sequence_length)  # [batch, features, time]
+timestep = torch.randint(0, 1000, (batch_size,))
+
+output = model(x, timestep)
+print(f"Input shape: {x.shape}")
+print(f"Output shape: {output.shape}")
+print(f"Num params: {sum(p.numel() for p in model.parameters()):,}")
+
+# Verify shapes match (essential for diffusion)
+assert output.shape == x.shape, "Output shape must match input shape for diffusion!"
+print("✅ Shape verification passed!")
+
 
 # ---------------------------------------------------------------------------------------------------------------------------
 # Training
