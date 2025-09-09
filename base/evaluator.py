@@ -5,6 +5,7 @@ from scipy import stats
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from scipy.spatial.distance import euclidean
 import pandas as pd
+from data_sampler import sample_timestep
 
 class DiffusionModelEvaluator:
     """

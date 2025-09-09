@@ -1,6 +1,14 @@
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
+import config
+from forward_process import (
+    get_index_from_list, 
+    sqrt_one_minus_alphas_cumprod, 
+    sqrt_recip_alphas, 
+    betas, 
+    posterior_variance
+)
 
 # Your existing sampling function - NO CHANGES NEEDED!
 @torch.no_grad()
@@ -45,7 +53,7 @@ def show_timeseries_sample(data_sample, dataset=None, title="Generated Time Seri
          raise ValueError(f"Expected data_sample to have 2 or 3 dimensions, but got {data_sample.dim()}")
 
     # Transpose if shape is [time, features] to [features, time]
-    if data_sample.shape[0] != INPUT_DIM and data_sample.shape[1] == INPUT_DIM:
+    if data_sample.shape[0] != config.INPUT_DIM and data_sample.shape[1] == config.INPUT_DIM:
          data_sample = data_sample.transpose(0, 1)
 
 
@@ -90,8 +98,8 @@ def sample_plot_timeseries(model, dataset=None, device='cpu', T=1000):
     Adapted from sample_plot_image() for time series data.
     """
     # Sample noise - CHANGE: Use time series dimensions instead of image
-    sequence_length = SEQUENCE_LENGTH  # Your global sequence length
-    input_dim = INPUT_DIM             # Your global input dimension
+    sequence_length = config.SEQUENCE_LENGTH  # Your global sequence length
+    input_dim = config.INPUT_DIM             # Your global input dimension
 
     # Start with pure noise: [batch=1, features, time]
     timeseries = torch.randn((1, input_dim, sequence_length), device=device)
@@ -124,8 +132,8 @@ def sample_multiple_timeseries(model, num_samples=5, dataset=None, device='cpu',
     """
     Generate multiple time series samples and plot them.
     """
-    sequence_length = SEQUENCE_LENGTH
-    input_dim = INPUT_DIM
+    sequence_length = config.SEQUENCE_LENGTH
+    input_dim = config.INPUT_DIM
 
     samples = []
 
@@ -178,8 +186,8 @@ def sample_single_timeseries(model, dataset=None, device='cpu', T=1000):
     """
     Generate a single time series sample (fastest option).
     """
-    sequence_length = SEQUENCE_LENGTH
-    input_dim = INPUT_DIM
+    sequence_length = config.SEQUENCE_LENGTH
+    input_dim = config.INPUT_DIM
 
     # Start with noise
     timeseries = torch.randn((1, input_dim, sequence_length), device=device)

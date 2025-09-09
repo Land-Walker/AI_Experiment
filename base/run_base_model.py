@@ -6,7 +6,6 @@ from forward_process import *
 from model import *
 from data_sampler import *
 from evaluator import *
-from trainer import *
 
 # Data Loading
 yf_df = load_yf_data()
@@ -80,6 +79,31 @@ print(f"Num params: {sum(p.numel() for p in model.parameters()):,}")
 assert output.shape == x.shape, "Output shape must match input shape for diffusion!"
 print("✅ Shape verification passed!")
 
+# ---------------------------------------------------------------------------------------------------------------------------
+# Training setup
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model.to(device)
+optimizer = Adam(model.parameters(), lr=0.001)
+epochs = 100  # Try more!
+
+# Move pre-calculated tensors to the correct device
+betas = betas.to(device)
+alphas = alphas.to(device)
+alphas_cumprod = alphas_cumprod.to(device)
+sqrt_alphas_cumprod = sqrt_alphas_cumprod.to(device)
+sqrt_one_minus_alphas_cumprod = sqrt_one_minus_alphas_cumprod.to(device)
+sqrt_recip_alphas = sqrt_recip_alphas.to(device)
+posterior_variance = posterior_variance.to(device)
+
+# Make sure you have the loss function (should work unchanged)
+def get_loss(model, x_0, t):
+    """
+    Calculate the loss for diffusion training.
+    This function should work unchanged for time series.
+    """
+    x_noisy, noise = forward_diffusion_sample(x_0, t, device)
+    noise_pred = model(x_noisy, t)
+    return F.mse_loss(noise, noise_pred)
 
 # ---------------------------------------------------------------------------------------------------------------------------
 # Training

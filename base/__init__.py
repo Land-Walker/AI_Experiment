@@ -65,6 +65,12 @@ from .evaluator import (
     evaluate_trained_model
 )
 
+# Global configuration variables
+# Auto-calculated based on your data (These will be set when the dataset is created)
+SEQUENCE_LENGTH = None  # Will be set automatically
+INPUT_DIM = None        # Will be set automatically
+BATCH_SIZE = 128
+
 # Package metadata
 __version__ = "1.0.0"
 __author__ = "Your Name"

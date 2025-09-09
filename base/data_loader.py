@@ -4,6 +4,8 @@ from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 import matplotlib.pyplot as plt
 import yfinance as yf
+import numpy as np
+import config
 
 # Download yf data
 def load_yf_data(ticker_name="^GSPC", start_date="2024-01-01"):
@@ -18,11 +20,6 @@ def show_yf_data(dataset, num_samples=20):
   dataset.plot(x='Date', y='Close') # Use dataset.plot() for plotting
   plt.title('Stock Price Data')
   plt.show()
-
-# Auto-calculated based on your data (These will be set when the dataset is created)
-SEQUENCE_LENGTH = None  # Will be set automatically
-INPUT_DIM = None        # Will be set automatically
-BATCH_SIZE = 128
 
 # Load & Preprocess Dataset for training
 class TimeSeriesDataset(Dataset):
@@ -171,14 +168,13 @@ def load_timeseries_dataset(data_path=None, data=None, yf_dataframe=None, use_co
     dataset = TimeSeriesDataset(data_path=data_path, data=data, yf_dataframe=yf_dataframe, use_columns=use_columns, sequence_length=sequence_length)
 
     # Auto-calculate global dimensions
-    global SEQUENCE_LENGTH, INPUT_DIM
-    SEQUENCE_LENGTH = dataset.sequence_length
-    INPUT_DIM = dataset.input_dim
+    config.SEQUENCE_LENGTH = dataset.sequence_length
+    config.INPUT_DIM = dataset.input_dim
 
     # Create dataloader
     dataloader = DataLoader(
         dataset,
-        batch_size=BATCH_SIZE,
+        batch_size=config.BATCH_SIZE,
         shuffle=True,
         drop_last=True
     )
@@ -186,10 +182,10 @@ def load_timeseries_dataset(data_path=None, data=None, yf_dataframe=None, use_co
     # Return dataset info
     data_range = '[-1, 1] (normalized)' if dataset.data_min is not None else 'original'
     data_info = {
-        'sequence_length': SEQUENCE_LENGTH,
-        'input_dim': INPUT_DIM,
+        'sequence_length': config.SEQUENCE_LENGTH,
+        'input_dim': config.INPUT_DIM,
         'total_sequences': len(dataset),
-        'batch_size': BATCH_SIZE,
+        'batch_size': config.BATCH_SIZE,
         'data_range': data_range,
         'columns': getattr(dataset, 'column_names', None)
     }
@@ -214,17 +210,17 @@ def show_timeseries_sample(data_sample, dataset=None, title="Time Series Sample"
         # Assume shape is [batch_size, features, time] or [batch_size, time, features]
         # Take the first sample and ensure it's [features, time]
         data_sample = data_sample[0]
-        if data_sample.shape[1] != INPUT_DIM and data_sample.shape[0] == INPUT_DIM:
+        if data_sample.shape[1] != config.INPUT_DIM and data_sample.shape[0] == config.INPUT_DIM:
              # It's [time, features], transpose to [features, time]
              data_sample = data_sample.transpose(0, 1)
-        elif data_sample.shape[0] != INPUT_DIM and data_sample.shape[1] != INPUT_DIM:
+        elif data_sample.shape[0] != config.INPUT_DIM and data_sample.shape[1] != config.INPUT_DIM:
              print(f"Warning: Unexpected sample shape {data_sample.shape} after taking batch[0]. Attempting transpose.")
              data_sample = data_sample.transpose(0, 1) # Hope it becomes [features, time]
 
     elif data_sample.dim() == 2:
         # Assume shape is [features, time] or [time, features]
         # Ensure it's [features, time]
-        if data_sample.shape[1] != INPUT_DIM and data_sample.shape[0] == INPUT_DIM:
+        if data_sample.shape[1] != config.INPUT_DIM and data_sample.shape[0] == config.INPUT_DIM:
              # It's [time, features], transpose to [features, time]
              data_sample = data_sample.transpose(0, 1)
 
