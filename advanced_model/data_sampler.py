@@ -571,17 +571,22 @@ def _visualize_gluonts_forecast(historical_data, forecast_results, dataset):
 # ============================================================================
 
 """
-Example usage of your FIXED enhanced data_sampler.py:
+Example usage of your ENHANCED data_sampler.py with robust GluonTS compatibility:
 
 # 1. Original functionality (completely unchanged):
 sample = sample_single_timeseries(model, dataset, device)
 samples = sample_multiple_timeseries(model, num_samples=5, dataset=dataset)
 generation_process = sample_plot_timeseries(model, dataset, device)
 
-# 2. FIXED GluonTS professional evaluation:
-gluonts_metrics = evaluate_with_gluonts_metrics(model, dataset, prediction_length=30)
-if gluonts_metrics and 'gluonts_metrics' in gluonts_metrics:
-    print("MASE score:", gluonts_metrics['gluonts_metrics']['MASE'])
+# 2. ENHANCED robust evaluation (tries GluonTS, falls back to simple evaluation):
+# This will ALWAYS return some evaluation results
+evaluation_results = robust_evaluate_model(model, dataset, prediction_length=30, num_samples=50)
+if evaluation_results.get('success', False):
+    print("✅ Evaluation completed successfully")
+    if 'gluonts_metrics' in evaluation_results:
+        print("📊 GluonTS metrics available")
+    else:
+        print("📊 Simple metrics:", evaluation_results.get('mse', 'N/A'))
 
 # 3. FIXED professional forecasting with uncertainty:
 forecast_result = sample_with_gluonts_forecast(
@@ -592,12 +597,19 @@ forecast_result = sample_with_gluonts_forecast(
 )
 print("FIXED forecast generated with uncertainty quantification")
 
-Key fixes:
-- FIXED: Array shape issues for GluonTS evaluation (now handles multivariate->univariate conversion)
-- FIXED: Broadcasting issues in denormalization
-- FIXED: Proper error handling and fallbacks
-- All your existing code works exactly the same
-- Professional time series evaluation metrics (MASE, sMAPE, MSIS, etc.)
-- Uncertainty quantification for forecasts
-- Backward compatible with all your current functions
+# 4. Version compatibility check:
+check_gluonts_compatibility()
+
+# 5. Direct simple evaluation (bypasses GluonTS entirely):
+simple_results = simple_evaluation_fallback(model, dataset, prediction_length=30)
+
+Key improvements:
+- ✅ FIXED: GluonTS lead_time attribute error
+- ✅ ENHANCED: Robust evaluation that always works
+- ✅ FALLBACK: Simple evaluation when GluonTS fails
+- ✅ VERSION: Compatibility checking for different GluonTS versions
+- ✅ METRICS: Basic MSE, MAE, MAPE when GluonTS unavailable
+- ✅ All your existing code still works exactly the same
+- ✅ Professional time series evaluation when possible
+- ✅ Graceful degradation when not possible
 """

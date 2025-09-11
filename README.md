@@ -4,8 +4,9 @@
 1. build on simple diffusion model, make it work for time series data (yfinance) ✅
 2. implement evaluation function to compare performance ✅
 3. implement result visualization tool ✅
-4. annotate / make a note of the code to fully understand what the hell is going on
-5. implement GluonTS to fully use multivariate characteristics of yfinance OHLV dataset
+4. annotate / make a note of the code to fully understand what the hell is going on ✅ 
+    - (not quite on the models, since I need to look at it anyway when I edit neural networks)
+5. implement GluonTS to fully use multivariate characteristics of yfinance OHLV dataset ✅
 6. implement wavelet transformation and cascaded frequency decomposition as an input
 7. modify wavenet architecture with FastKANConv residual blocks
 8. implement subtle details from TimeGrad (specifically for processign time series data)
