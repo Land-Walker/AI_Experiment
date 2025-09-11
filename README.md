@@ -4,15 +4,15 @@
 1. build on simple diffusion model, make it work for time series data (yfinance) ✅
 2. implement evaluation function to compare performance ✅
 3. implement result visualization tool ✅
-- 3.5 annotate / make a note of the code to fully understand what the hell is going on 
-4. implement wavelet transformation and cascaded frequency decomposition as an input
-5. modify wavenet architecture with FastKANConv residual blocks
-5. implement subtle details from TimeGrad (specifically for processign time series data)
-    - make input multivariate
+4. annotate / make a note of the code to fully understand what the hell is going on
+5. implement GluonTS to fully use multivariate characteristics of yfinance OHLV dataset
+6. implement wavelet transformation and cascaded frequency decomposition as an input
+7. modify wavenet architecture with FastKANConv residual blocks
+8. implement subtle details from TimeGrad (specifically for processign time series data)
     - update result visualization tool
-6. implement conditioning for denoising process
-7. implement KAN as a conditioning layer
-8. implement a function that allows to see what is going on in KAN
+9. implement conditioning for denoising process
+10. implement KAN as a conditioning layer
+11. implement a function that allows to see what is going on in KAN
     - Visualization tool possibly?
 
 ## Architecture Design

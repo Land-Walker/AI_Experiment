@@ -166,6 +166,7 @@ class TimeSeriesDataset(Dataset):
 
     def __getitem__(self, idx):
         """
+        Divide the dataset into digestable pieces if required
         Get a single sequence by index
         
         Args:
@@ -247,14 +248,14 @@ def load_timeseries_dataset(data_path=None, data=None, yf_dataframe=None, use_co
         sequence_length=sequence_length
     )
 
-    # PRESERVED: Update global config variables for other modules to use
+    # Update global config variables for other modules to use
     config.SEQUENCE_LENGTH = dataset.sequence_length
     config.INPUT_DIM = dataset.input_dim
 
     # Create PyTorch DataLoader for efficient batch processing
     dataloader = DataLoader(
         dataset,
-        batch_size=config.BATCH_SIZE,  # PRESERVED: Use config module
+        batch_size=config.BATCH_SIZE,  # Use config module
         shuffle=True,                  # Randomly shuffle data each epoch
         drop_last=True                 # Drop incomplete final batch
     )
@@ -262,10 +263,10 @@ def load_timeseries_dataset(data_path=None, data=None, yf_dataframe=None, use_co
     # Create information dictionary about the dataset
     data_range = '[-1, 1] (normalized)' if dataset.data_min is not None else 'original'
     data_info = {
-        'sequence_length': config.SEQUENCE_LENGTH,  # PRESERVED: Use config module
-        'input_dim': config.INPUT_DIM,              # PRESERVED: Use config module
+        'sequence_length': config.SEQUENCE_LENGTH,  # Use config module
+        'input_dim': config.INPUT_DIM,              # Use config module
         'total_sequences': len(dataset),
-        'batch_size': config.BATCH_SIZE,            # PRESERVED: Use config module
+        'batch_size': config.BATCH_SIZE,            # Use config module
         'data_range': data_range,
         'columns': getattr(dataset, 'column_names', None)
     }
@@ -294,16 +295,16 @@ def show_timeseries_sample(data_sample, dataset=None, title="Time Series Sample"
         data_sample = data_sample[0]
         
         # Check if we need to transpose based on expected dimensions
-        if data_sample.shape[1] != config.INPUT_DIM and data_sample.shape[0] == config.INPUT_DIM:  # PRESERVED
+        if data_sample.shape[1] != config.INPUT_DIM and data_sample.shape[0] == config.INPUT_DIM: 
              # Currently [time, features], transpose to [features, time]
              data_sample = data_sample.transpose(0, 1)
-        elif data_sample.shape[0] != config.INPUT_DIM and data_sample.shape[1] != config.INPUT_DIM:  # PRESERVED
+        elif data_sample.shape[0] != config.INPUT_DIM and data_sample.shape[1] != config.INPUT_DIM:
              print(f"Warning: Unexpected sample shape {data_sample.shape} after taking batch[0]. Attempting transpose.")
              data_sample = data_sample.transpose(0, 1)
 
     elif data_sample.dim() == 2:
         # Ensure correct orientation: [features, time]
-        if data_sample.shape[1] != config.INPUT_DIM and data_sample.shape[0] == config.INPUT_DIM:  # PRESERVED
+        if data_sample.shape[1] != config.INPUT_DIM and data_sample.shape[0] == config.INPUT_DIM:
              # Currently [time, features], transpose to [features, time]
              data_sample = data_sample.transpose(0, 1)
     else:

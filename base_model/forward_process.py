@@ -1,7 +1,6 @@
 import torch.nn.functional as F
 import torch
 
-# PRESERVED: Your exact comment style and content
 # using linspace, create a list of timesteps which will be a schedule of noising process
 # torch.linspace: Creates a one-dimensional tensor of size steps whose values are evenly spaced from start to end, inclusive
 def linear_beta_schedule(timesteps, start=0.0001, end=0.02):
@@ -37,7 +36,6 @@ def get_index_from_list(vals, t, x_shape):
     Returns:
         torch.Tensor: Selected values reshaped for broadcasting with input data
     """
-    # PRESERVED: Your exact comments
     batch_size = t.shape[0]             # Get the batch size from the timestep tensor
     out = vals.gather(-1, t.cpu())      # Extract values at timestep indices t from the vals tensor
     # Reshape output to match input dimensions:
@@ -72,7 +70,6 @@ def forward_diffusion_sample(x_0, t, device="cpu"):
             - noisy_data: x_t with appropriate amount of noise added
             - noise: the actual noise that was added (needed for training loss)
     """
-    # PRESERVED: Your exact comments
     noise = torch.randn_like(x_0)         # Create a noise
     # Initialize variable that controls how much original image to keep (cumulative product of alphas upto timestep t)
     sqrt_alphas_cumprod_t = get_index_from_list(sqrt_alphas_cumprod, t, x_0.shape)
@@ -85,12 +82,10 @@ def forward_diffusion_sample(x_0, t, device="cpu"):
         + sqrt_one_minus_alphas_cumprod_t.to(device) * noise.to(device), noise.to(device)
 
 # ============================================================================
-# PRECOMPUTED DIFFUSION PARAMETERS (PRESERVED EXACTLY)
+# PRECOMPUTED DIFFUSION PARAMETERS
 # ============================================================================
-
-# PRESERVED: Your exact comment and value
 # Define beta schedule
-T = 300
+T = 1000
 betas = linear_beta_schedule(timesteps=T)
 
 # ============================================================================
@@ -99,16 +94,13 @@ betas = linear_beta_schedule(timesteps=T)
 # These values are computed once and reused throughout training for efficiency
 # They implement the mathematical relationships derived in the DDPM paper
 
-# PRESERVED: Your exact comments
 # Pre-calculated different terms for closed form
 # inverse relationship in DDPM
 alphas = 1. - betas
 
-# PRESERVED: Your exact comment
 # Represents how much of the original signal remains after t steps
 alphas_cumprod = torch.cumprod(alphas, axis=0)
 
-# PRESERVED: Your exact multi-line comment block
 # Creates [1.0, ᾱ₀, ᾱ₁, ᾱ₂, ...] by:
 # - [:-1] removes last element: [ᾱ₀, ᾱ₁, ᾱ₂, ...]
 # - F.pad adds 1.0 at beginning: [1.0, ᾱ₀, ᾱ₁, ᾱ₂, ...]
@@ -116,16 +108,13 @@ alphas_cumprod = torch.cumprod(alphas, axis=0)
 # Needed because at t=0, the "previous" cumulative product is 1.0 (no noise yet)
 alphas_cumprod_prev = F.pad(alphas_cumprod[:-1], (1, 0), value=1.0)
 
-# PRESERVED: Your exact comment
 # sed in reverse process denoising step
 sqrt_recip_alphas = torch.sqrt(1.0 / alphas)
 
-# PRESERVED: Your exact comment
 # Forward process coefficients
 sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
 sqrt_one_minus_alphas_cumprod = torch.sqrt(1. - alphas_cumprod)
 
-# PRESERVED: Your exact multi-line comment block
 # Most complex: Posterior variance for reverse process
 # Formula: βₛ × (1 - ᾱₛ₋₁) / (1 - ᾱₛ)
 # This is the optimal variance when denoising from xₛ to xₛ₋₁(from DDPM paper)
