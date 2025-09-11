@@ -1,4 +1,3 @@
-# PRESERVED: Your exact imports
 from torch.optim import Adam
 import torch
 
@@ -12,12 +11,10 @@ from evaluator import *
 # STEP 1: DATA LOADING AND INITIAL EXPLORATION
 # ============================================================================
 
-# PRESERVED: Your exact data loading code
 # Data Loading
 yf_df = load_yf_data()  # Downloads S&P 500 data from Yahoo Finance (default: ^GSPC from 2024-01-01)
 show_yf_data(yf_df)     # Display basic price chart for visual inspection
 
-# PRESERVED: Your exact dataset creation code with all options
 # Option 1: Use your yfDf with selected columns
 dataset, dataloader, info = load_timeseries_dataset(
     yf_dataframe=yf_df,  # Your existing variable
@@ -31,7 +28,6 @@ dataset, dataloader, info = load_timeseries_dataset(
 # Option 3: Just closing prices from your yfDf
 # dataset, dataloader, info = load_timeseries_dataset(yf_dataframe=yfDf, use_columns=['Close'], sequence_length=100)
 
-# PRESERVED: Your exact information display
 # Print dataset information
 print("Dataset Information:")
 for key, value in info.items():
@@ -41,15 +37,13 @@ for key, value in info.items():
 # STEP 2: DATA SAMPLING AND VERIFICATION
 # ============================================================================
 
-# PRESERVED: Your exact sampling code with your comment style
-# ---------------------------------------------------------------------------------------------------------------------------
 # Sampling
 # Show a sample
 sample_batch = next(iter(dataloader))  # Get first batch from dataloader
 print(f"\nSample batch shape: {sample_batch.shape}")  # Should be [batch_size, features, time]
 show_timeseries_sample(sample_batch, dataset, "Stock Price Time Series")
 
-# PRESERVED: Your exact duplicate dataset creation (maintaining your structure)
+# duplicate dataset creation
  # Option 1: Use your yfDf with selected columns
 dataset, dataloader, info = load_timeseries_dataset(
     yf_dataframe=yf_df,  # Your existing variable
@@ -63,13 +57,11 @@ dataset, dataloader, info = load_timeseries_dataset(
 # Option 3: Just closing prices from your yfDf
 # dataset, dataloader, info = load_timeseries_dataset(yf_dataframe=yfDf, use_columns=['Close'], sequence_length=100)
 
-# PRESERVED: Your exact duplicate information display
 # Print dataset information
 print("Dataset Information:")
 for key, value in info.items():
     print(f"  {key}: {value}")
 
-# PRESERVED: Your exact duplicate sample examination
 # Show a sample
 sample_batch = next(iter(dataloader))
 print(f"\nSample batch shape: {sample_batch.shape}")
@@ -79,13 +71,10 @@ show_timeseries_sample(sample_batch, dataset, "Stock Price Time Series")
 # STEP 3: MODEL CREATION AND ARCHITECTURE TESTING
 # ============================================================================
 
-# PRESERVED: Your exact modeling section with your comment style
-# ---------------------------------------------------------------------------------------------------------------------------
 # Modelling
 # For time series with 4 features (OHLC) and sequence length 100
 model = create_wavenet_model(input_dim=4)
 
-# PRESERVED: Your exact model testing code
 # Test forward pass
 batch_size = 8
 sequence_length = 100
@@ -105,15 +94,12 @@ print("✅ Shape verification passed!")
 # STEP 4: TRAINING SETUP AND CONFIGURATION
 # ============================================================================
 
-# PRESERVED: Your exact training setup with your comment style
-# ---------------------------------------------------------------------------------------------------------------------------
 # Training setup
 device = "cuda" if torch.cuda.is_available() else "cpu"  # Use GPU if available for faster training
 model.to(device)  # Move model to selected device
 optimizer = Adam(model.parameters(), lr=0.001)  # Adam optimizer with learning rate 0.001
 epochs = 100  # Try more!
 
-# PRESERVED: Your exact tensor device movement code
 # Move pre-calculated tensors to the correct device
 betas = betas.to(device)
 alphas = alphas.to(device)
@@ -123,7 +109,6 @@ sqrt_one_minus_alphas_cumprod = sqrt_one_minus_alphas_cumprod.to(device)
 sqrt_recip_alphas = sqrt_recip_alphas.to(device)
 posterior_variance = posterior_variance.to(device)
 
-# PRESERVED: Your exact loss function with your comment
 # Make sure you have the loss function (should work unchanged)
 def get_loss(model, x_0, t):
     """
@@ -137,16 +122,11 @@ def get_loss(model, x_0, t):
 # ============================================================================
 # STEP 5: MAIN TRAINING LOOP
 # ============================================================================
-
-# PRESERVED: Your exact training section with your comment style
-# ---------------------------------------------------------------------------------------------------------------------------
-# Training
 for epoch in range(epochs):
     for step, batch in enumerate(dataloader):
         # Clear gradients from previous iteration
         optimizer.zero_grad()
 
-        # PRESERVED: Your exact batch handling code with comments
         # Move batch to device and get correct shape
         if isinstance(batch, list):
             x_0 = batch[0].to(device)  # Handle list of tensors
@@ -156,22 +136,18 @@ for epoch in range(epochs):
         # x_0 should now be [batch, features, time] from the updated dataset
         # No need for reshaping since dataset now returns correct format
 
-        # PRESERVED: Your exact timestep generation code with comment
         # Generate random timesteps
         t = torch.randint(0, T, (x_0.shape[0],), device=device).long()  # Use actual batch size
 
-        # PRESERVED: Your exact loss calculation code with comment
         # Calculate loss (same as original)
         loss = get_loss(model, x_0, t)
         loss.backward()
         optimizer.step()
 
-        # PRESERVED: Your exact logging code with comments
         # Logging and sampling (modified for time series)
         if epoch % 5 == 0 and step == 0:
             print(f"Epoch {epoch} | step {step:03d} Loss: {loss.item():.6f}")
 
-            # PRESERVED: Your exact sampling code with comments
             # Sample and show time series instead of image
             model.eval()
             with torch.no_grad():
@@ -179,7 +155,6 @@ for epoch in range(epochs):
                 sample_single_timeseries(model, dataset, device, T)
             model.train()
 
-    # PRESERVED: Your exact epoch summary code with comment
     # Optional: Print epoch summary
     if epoch % 10 == 0:
         print(f"Completed epoch {epoch}/{epochs}")
@@ -190,7 +165,6 @@ print("Training completed!")
 # STEP 6: MODEL SAVING AND CHECKPOINTING
 # ============================================================================
 
-# PRESERVED: Your exact model saving code with comments
 # Optional: Save the trained model
 torch.save({
     'epoch': epochs,
@@ -201,7 +175,6 @@ torch.save({
 
 print(f"Model saved as 'wavenet_diffusion_epoch_{epochs}.pth'")
 
-# PRESERVED: Your exact evaluation code
 print("Starting evaluation...")
 results = evaluate_trained_model(model, dataset, device=device, n_samples=50, T=T)
 

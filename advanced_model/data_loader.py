@@ -227,13 +227,9 @@ class TimeSeriesDataset(Dataset):
         print(f"Sequence setup: {self.num_sequences} sequences of length {self.sequence_length}")
     
     def _apply_normalization(self):
-        """Apply normalization to [-1, 1] range"""
-        self.data_min = self.data.min(axis=0, keepdims=True)  # [1, features]
-        self.data_max = self.data.max(axis=0, keepdims=True)  # [1, features]
-        
-        # Reshape for broadcasting
-        self.data_min = self.data_min.squeeze(0)  # [features]
-        self.data_max = self.data_max.squeeze(0)  # [features]
+        """Apply normalization to [-1, 1] range with FIXED broadcasting"""
+        self.data_min = self.data.min(axis=0, keepdims=False)  # [features]
+        self.data_max = self.data.max(axis=0, keepdims=False)  # [features]
         
         # Apply min-max normalization to [-1, 1]
         data_range = self.data_max - self.data_min
@@ -301,21 +297,81 @@ class TimeSeriesDataset(Dataset):
         return tensor
 
     def denormalize(self, normalized_data):
-        """Convert normalized data back to original scale"""
+        """FIXED: Convert normalized data back to original scale with proper broadcasting"""
         if not hasattr(self, 'data_min') or self.data_min is None:
             return normalized_data
             
+        # Convert tensor to numpy if needed
         if isinstance(normalized_data, torch.Tensor):
             normalized_data = normalized_data.detach().cpu().numpy()
-
-        # Reshape for proper broadcasting: [features, 1]
-        data_min = self.data_min[:, np.newaxis]
-        data_max = self.data_max[:, np.newaxis]
-        data_range = data_max - data_min
-        data_range = np.where(data_range == 0, 1, data_range)
-
-        # Reverse normalization
-        return (normalized_data + 1) / 2 * data_range + data_min
+        
+        # Handle different input shapes
+        original_shape = normalized_data.shape
+        
+        # Case 1: Standard format [features, time] or [time, features]
+        if len(original_shape) == 2:
+            if original_shape[0] == self.input_dim:
+                # [features, time] format
+                data_min = self.data_min[:, np.newaxis]  # [features, 1]
+                data_max = self.data_max[:, np.newaxis]  # [features, 1]
+                data_range = data_max - data_min
+                data_range = np.where(data_range == 0, 1, data_range)
+                return (normalized_data + 1) / 2 * data_range + data_min
+            
+            elif original_shape[1] == self.input_dim:
+                # [time, features] format
+                data_min = self.data_min[np.newaxis, :]  # [1, features]
+                data_max = self.data_max[np.newaxis, :]  # [1, features]
+                data_range = data_max - data_min
+                data_range = np.where(data_range == 0, 1, data_range)
+                return (normalized_data + 1) / 2 * data_range + data_min
+        
+        # Case 2: Batch format [batch, features, time]
+        elif len(original_shape) == 3:
+            if original_shape[1] == self.input_dim:
+                # [batch, features, time] format
+                data_min = self.data_min[np.newaxis, :, np.newaxis]  # [1, features, 1]
+                data_max = self.data_max[np.newaxis, :, np.newaxis]  # [1, features, 1]
+                data_range = data_max - data_min
+                data_range = np.where(data_range == 0, 1, data_range)
+                return (normalized_data + 1) / 2 * data_range + data_min
+            
+            elif original_shape[2] == self.input_dim:
+                # [batch, time, features] format
+                data_min = self.data_min[np.newaxis, np.newaxis, :]  # [1, 1, features]
+                data_max = self.data_max[np.newaxis, np.newaxis, :]  # [1, 1, features]
+                data_range = data_max - data_min
+                data_range = np.where(data_range == 0, 1, data_range)
+                return (normalized_data + 1) / 2 * data_range + data_min
+        
+        # Case 3: Complex batch format [batch, features, time, extra_dim]
+        elif len(original_shape) == 4:
+            if original_shape[1] == self.input_dim:
+                # [batch, features, time, extra] format
+                data_min = self.data_min[np.newaxis, :, np.newaxis, np.newaxis]  # [1, features, 1, 1]
+                data_max = self.data_max[np.newaxis, :, np.newaxis, np.newaxis]  # [1, features, 1, 1]
+                data_range = data_max - data_min
+                data_range = np.where(data_range == 0, 1, data_range)
+                return (normalized_data + 1) / 2 * data_range + data_min
+        
+        # Fallback: try to handle any shape by flattening and reshaping
+        print(f"Warning: Unusual denormalization shape {original_shape}, using fallback method")
+        
+        # Flatten, denormalize, and reshape
+        flat_data = normalized_data.flatten()
+        
+        # Simple element-wise denormalization (less accurate but safer)
+        # Use mean values for broadcasting
+        data_min_mean = np.mean(self.data_min)
+        data_max_mean = np.mean(self.data_max)
+        data_range_mean = data_max_mean - data_min_mean
+        
+        if data_range_mean == 0:
+            data_range_mean = 1
+            
+        denorm_flat = (flat_data + 1) / 2 * data_range_mean + data_min_mean
+        
+        return denorm_flat.reshape(original_shape)
 
 def load_timeseries_dataset(data_path=None, 
                           data=None, 
