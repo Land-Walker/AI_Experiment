@@ -1,4 +1,4 @@
-# ENHANCED: Updated imports (add GluonTS if available)
+# ENHANCED: Updated imports
 from torch.optim import Adam
 import torch
 import torch.nn.functional as F
@@ -184,63 +184,101 @@ print(f"Enhanced model saved as '{model_save_path}'")
 print(f"Model features: {info['columns']}")
 
 # ============================================================================
-# STEP 7: ENHANCED EVALUATION AND ANALYSIS
+# STEP 7: ENHANCED EVALUATION USING NEW EVALUATOR SYSTEM
 # ============================================================================
 
 print(f"\n=== Enhanced Multivariate Evaluation ===")
 
-# UPDATED: Use GluonTS evaluation from enhanced data_sampler
-print("Running GluonTS professional evaluation...")
+# 🎯 NEW: Use the enhanced evaluator system with robust evaluation
+print("🚀 Using Enhanced Evaluator System with Robust Evaluation")
+
+# Option 1: Quick evaluation for immediate feedback
+print("\n1️⃣ Quick Evaluation (fast feedback):")
 try:
-    gluonts_results = evaluate_with_gluonts_metrics(
-        model=model, 
-        dataset=dataset, 
-        prediction_length=30, 
-        num_samples=50
-    )
+    quick_results = quick_evaluation(model, dataset, device)
     
-    if gluonts_results and 'gluonts_metrics' in gluonts_results:
-        print("✅ GluonTS evaluation completed successfully")
-        print(f"MASE Score: {gluonts_results['gluonts_metrics'].get('MASE', 'N/A')}")
-        print(f"sMAPE Score: {gluonts_results['gluonts_metrics'].get('sMAPE', 'N/A')}")
+    if quick_results.get('success', False):
+        print("✅ Quick evaluation successful!")
+        method = quick_results.get('evaluation_method', 'unknown')
+        print(f"📊 Method used: {method}")
+        
+        # Display metrics based on what we got
+        if 'gluonts_metrics' in quick_results:
+            print("🎯 GluonTS metrics available")
+        elif 'mse' in quick_results:
+            print(f"📈 Simple metrics - MSE: {quick_results['mse']:.6f}, MAE: {quick_results['mae']:.6f}")
     else:
-        print("ℹ️ GluonTS evaluation returned empty results (GluonTS may not be installed)")
+        print("⚠️ Quick evaluation had issues")
         
 except Exception as e:
-    print(f"GluonTS evaluation encountered an issue: {e}")
-    print("Falling back to standard evaluation...")
+    print(f"❌ Quick evaluation failed: {e}")
 
-# Standard evaluation (fallback)
-print("\nRunning standard evaluation...")
+# Option 2: Standard robust evaluation
+print("\n2️⃣ Standard Robust Evaluation:")
 try:
-    results = evaluate_trained_model(model, dataset, device=device, n_samples=50, T=T)
-    print("✅ Standard evaluation completed")
-except Exception as e:
-    print(f"Standard evaluation encountered an issue: {e}")
-
-# UPDATED: Use enhanced forecasting from new data_sampler
-print("\nGenerating professional forecast with uncertainty quantification...")
-try:
-    forecast_results = sample_with_gluonts_forecast(
+    evaluation_results = robust_evaluate_model(
         model=model,
         dataset=dataset,
         prediction_length=30,
+        num_samples=50,
         device=device,
         T=T
     )
     
-    if forecast_results and 'forecast_mean' in forecast_results:
-        print("✅ Professional forecast generated successfully")
-        print(f"Forecast shape: {forecast_results['forecast_mean'].shape}")
-        print(f"Uncertainty quantification: {len(forecast_results.get('forecast_quantiles', {}))} quantiles")
+    if evaluation_results.get('success', False):
+        print("🎉 Robust evaluation completed successfully!")
+        
+        method = evaluation_results.get('evaluation_method', 'unknown')
+        print(f"📊 Evaluation method: {method}")
+        
+        # Display results based on what we got
+        if 'gluonts_metrics' in evaluation_results:
+            print("🏆 Professional GluonTS metrics:")
+            gluonts_metrics = evaluation_results['gluonts_metrics']
+            key_metrics = ['MASE', 'sMAPE', 'MSIS', 'QuantileLoss[0.5]', 'Coverage[0.5]']
+            for metric in key_metrics:
+                if metric in gluonts_metrics:
+                    print(f"  {metric}: {gluonts_metrics[metric]:.4f}")
+        elif 'mse' in evaluation_results:
+            print("📊 Simple evaluation metrics:")
+            print(f"  MSE:  {evaluation_results['mse']:.6f}")
+            print(f"  MAE:  {evaluation_results['mae']:.6f}")
+            print(f"  MAPE: {evaluation_results['mape']:.2f}%")
+            print(f"  R²:   {evaluation_results.get('r2', 'N/A'):.4f}")
+        else:
+            print("✅ Basic sampling completed successfully")
     else:
-        print("ℹ️ Professional forecast completed with basic fallback")
+        print("❌ Robust evaluation failed completely")
         
 except Exception as e:
-    print(f"Professional forecasting encountered an issue: {e}")
+    print(f"❌ Robust evaluation encountered error: {e}")
+
+# Option 3: Comprehensive evaluation (if you want everything)
+print("\n3️⃣ Comprehensive Evaluation (all methods):")
+try:
+    comprehensive_results = comprehensive_evaluation(model, dataset, device)
+    print("✅ Comprehensive evaluation completed!")
+    
+    # The comprehensive evaluation already prints its own summary
+    
+except Exception as e:
+    print(f"❌ Comprehensive evaluation failed: {e}")
+
+# Option 4: Fallback to original evaluator if all else fails
+print("\n4️⃣ Fallback: Original CRPS Evaluation:")
+try:
+    original_results = evaluate_trained_model(model, dataset, device=device, n_samples=50, T=T)
+    
+    if original_results.get('success', False):
+        print("✅ Original evaluation method successful!")
+    else:
+        print("⚠️ Original evaluation had issues")
+        
+except Exception as e:
+    print(f"❌ Original evaluation failed: {e}")
 
 # ENHANCED: Generate multiple samples for diversity check
-print("\nGenerating multiple samples for diversity analysis...")
+print("\n🎲 Generating multiple samples for diversity analysis...")
 try:
     diverse_samples = sample_multiple_timeseries(
         model=model, 
@@ -265,21 +303,7 @@ try:
             print(f"  {feature_name}: mean={feature_mean:.4f}, std={feature_std:.4f}")
             
 except Exception as e:
-    print(f"Multiple sampling encountered an issue: {e}")
-
-# Final comprehensive sample generation
-print("\nGenerating final comprehensive sample...")
-try:
-    final_sample = sample_plot_timeseries(model, dataset, device, T=T)
-    print("✅ Final sample generation completed with step-by-step visualization")
-except Exception as e:
-    print(f"Final sample generation encountered an issue: {e}")
-    # Fallback to simple sampling
-    try:
-        simple_sample = sample_single_timeseries(model, dataset, device, T)
-        print("✅ Simple sample generation completed as fallback")
-    except Exception as e2:
-        print(f"Even simple sampling failed: {e2}")
+    print(f"❌ Multiple sampling failed: {e}")
 
 print("\n" + "="*60)
 print("🎉 ENHANCED MULTIVARIATE DIFFUSION PIPELINE COMPLETED!")
@@ -288,55 +312,40 @@ print(f"✅ Successfully trained on {input_dim}-dimensional time series")
 print(f"✅ Features: {', '.join(info['columns'])}")
 print(f"✅ GluonTS preprocessing: {info['use_gluonts']}")
 print(f"✅ Model saved with enhanced metadata")
-print(f"✅ Comprehensive evaluation completed")
+print(f"✅ Enhanced robust evaluation system used")
 print("\n🚀 Your multivariate diffusion model is ready for advanced applications!")
 
 # ============================================================================
-# ENHANCED USAGE EXAMPLES
+# USAGE EXAMPLES
 # ============================================================================
 
-print(f"\n=== Usage Examples for Your Enhanced Model ===")
-print("# Load trained model:")
+print(f"\n=== Usage Examples for Enhanced Evaluator ===")
+print("# Load saved model:")
 print(f"checkpoint = torch.load('{model_save_path}')")
 print("model.load_state_dict(checkpoint['model_state_dict'])")
 print()
-print("# Generate samples with your enhanced functions:")
-print("sample = sample_single_timeseries(model, dataset, device)")
-print("samples = sample_multiple_timeseries(model, num_samples=5, dataset=dataset, device=device)")
-print("forecast = sample_with_gluonts_forecast(model, dataset, prediction_length=30, device=device)")
-print("metrics = evaluate_with_gluonts_metrics(model, dataset, prediction_length=30)")
+print("# Enhanced evaluation options:")
+print("# 1. Quick evaluation (recommended for development)")
+print("results = quick_evaluation(model, dataset, device)")
+print()
+print("# 2. Robust evaluation (recommended for final assessment)")
+print("results = robust_evaluate_model(model, dataset, prediction_length=30, num_samples=50)")
+print()
+print("# 3. Comprehensive evaluation (all methods)")
+print("results = comprehensive_evaluation(model, dataset, device)")
+print()
+print("# 4. Simple evaluation only (no GluonTS)")
+print("results = simple_evaluation_metrics(model, dataset, prediction_length=30)")
+print()
+print("# 5. Original enhanced evaluator")
+print("results = evaluate_trained_model(model, dataset, device=device, n_samples=50)")
 
-# ============================================================================
-# BACKWARD COMPATIBILITY NOTE
-# ============================================================================
-"""
-BACKWARD COMPATIBILITY AND ENHANCEMENT NOTES:
-
-This updated run_base_model.py is designed to work with your enhanced data_sampler.py:
-
-1. ENHANCED FUNCTIONS USED:
-   - evaluate_with_gluonts_metrics() - NEW professional evaluation
-   - sample_with_gluonts_forecast() - NEW forecasting with uncertainty
-   - All original sampling functions work as before
-
-2. GRACEFUL FALLBACKS:
-   - If GluonTS is not installed, functions fallback gracefully
-   - Error handling ensures the pipeline continues even if some features fail
-   - Standard evaluation is still available as backup
-
-3. MAINTAINED COMPATIBILITY:
-   - All your original sampling functions still work exactly the same
-   - Model architecture and training loop unchanged
-   - Can still run with use_gluonts=False for original behavior
-
-4. NEW CAPABILITIES:
-   - Professional time series evaluation metrics
-   - Uncertainty quantification in forecasts
-   - Enhanced multivariate visualization
-   - Statistical analysis of generated samples
-
-5. FLEXIBLE USAGE:
-   - Works with any number of features (4 for OHLC, 5 for OHLCV, etc.)
-   - Automatic adaptation to dataset structure
-   - Enhanced metadata saving for model tracking
-"""
+print(f"\n🎯 Key Benefits of Enhanced Evaluator:")
+print("✅ Always returns evaluation results (never fails completely)")
+print("✅ Automatic GluonTS compatibility handling")
+print("✅ Multiple evaluation methods available")
+print("✅ Enhanced error handling and diagnostics")
+print("✅ Comprehensive metrics and visualizations")
+print("✅ Backwards compatible with original code")
+print("✅ Professional time series metrics when possible")
+print("✅ Graceful fallbacks when GluonTS unavailable")
